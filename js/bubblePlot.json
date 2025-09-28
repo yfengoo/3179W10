@@ -1,0 +1,87 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 800,
+  "height": 600,
+  "title": "AU Top-10 — Release vs Max Weeks on Chart (Bubble = streams_views)",
+  "data": {
+    "url": "https://raw.githubusercontent.com/yfengoo/3179W10/refs/heads/main/data/youtube_spotify.csv"
+  },
+  "params": [
+    {
+      "name": "Platform_selection",
+      "bind": {
+        "input": "select",
+        "options": ["All", "Spotify", "YouTube"],
+        "name": "Platform: "
+      },
+      "value": "All"
+    },
+    {
+      "name": "SongSel",
+      "select": {"type": "point", "fields": ["Song"]},
+      "bind": "legend"
+    }
+  ],
+  "transform": [
+    {"calculate": "toNumber(datum.weeks_on_chart)", "as": "WeeksNum"},
+    {"calculate": "toNumber(datum.streams_views)", "as": "SV"},
+    {"filter": "isFinite(datum.WeeksNum) && isFinite(datum.SV)"},
+    {
+      "window": [{"op": "row_number", "as": "rownum"}],
+      "sort": [
+        {"field": "WeeksNum", "order": "descending"},
+        {"field": "end_date_of_week", "order": "descending"}
+      ],
+      "groupby": ["Song", "Platform"]
+    },
+    {"filter": "datum.rownum == 1"},
+    {
+      "filter": "Platform_selection == 'All' || datum.Platform == Platform_selection"
+    }
+  ],
+  "mark": {"type": "circle"},
+  "encoding": {
+    "x": {
+      "field": "release_date",
+      "type": "temporal",
+      "title": "Release Date",
+      "axis": {"format": "%b %Y"}
+    },
+    "y": {
+      "field": "WeeksNum",
+      "type": "quantitative",
+      "title": "Max Weeks in Top 10"
+    },
+    "size": {
+      "field": "SV",
+      "type": "quantitative",
+      "scale": {
+        "type": "threshold",
+        "domain": [300000, 600000, 1000000, 1500000, 2000000, 3000000],
+        "range": [20, 60, 120, 200, 300, 400, 500]
+      },
+      "legend": {"title": "Streams/Views", "format": ".1s"}
+    },
+    "color": {"field": "Song", "type": "nominal", "title": "Song"},
+    "opacity": {"condition": {"param": "SongSel", "value": 1}, "value": 0.2},
+    "fillOpacity": {
+      "condition": [{"test": "datum.Platform === 'YouTube'", "value": 0}],
+      "value": 0.85
+    },
+    "stroke": {"field": "Song"},
+    "strokeWidth": {
+      "condition": [{"test": "datum.Platform === 'YouTube'", "value": 1}],
+      "value": 0.05
+    },
+    "tooltip": [
+      {"field": "Song"},
+      {"field": "Artists"},
+      {"field": "Platform"},
+      {"field": "WeeksNum", "title": "Max Weeks"},
+      {"field": "SV", "title": "Streams/Views at Max", "format": ",.0f"},
+      {"field": "release_date", "type": "temporal", "title": "Release Date"},
+      {"field": "end_date_of_week", "type": "temporal", "title": "Week of Max"}
+    ]
+  },
+  "config": {}
+}

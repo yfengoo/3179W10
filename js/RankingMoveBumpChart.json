@@ -1,0 +1,61 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 900,
+  "height": 500,
+  "title": "AU Top-10 Songs — Weekly Ranking Movements",
+  "data": {
+    "url": "https://raw.githubusercontent.com/yfengoo/3179W10/refs/heads/main/data/youtube_spotify.csv"
+  },
+  "params": [
+    {
+      "name": "Platform_selection",
+      "bind": {
+        "input": "select",
+        "options": ["Spotify", "YouTube"],
+        "name": "Platform: "
+      },
+      "value": "Spotify"
+    },
+    {
+      "name": "Song_selection",
+      "select": {"type": "point", "fields": ["Song"], "toggle": "true"},
+      "bind": "legend"
+    }
+  ],
+  "transform": [
+    {"filter": "datum.Platform == Platform_selection"},
+    {"calculate": "toNumber(datum.rank)", "as": "RankNum"},
+    {"filter": "isFinite(datum.RankNum)"}
+  ],
+  "mark": {"type": "line", "point": true},
+  "encoding": {
+    "x": {
+      "field": "end_date_of_week",
+      "type": "ordinal",
+      "title": "End Date of Week"
+    },
+    "y": {
+      "field": "RankNum",
+      "type": "quantitative",
+      "title": "Weekly Rank",
+      "scale": {"reverse": true}
+    },
+    "color": {"field": "Song", "type": "nominal", "title": "Song"},
+    "opacity": {
+      "condition": {"param": "Song_selection", "value": 1},
+      "value": 0.3
+    },
+    "strokeWidth": {
+      "condition": {"param": "Song_selection", "value": 3},
+      "value": 1
+    },
+    "tooltip": [
+      {"field": "Song"},
+      {"field": "Artists"},
+      {"field": "Platform"},
+      {"field": "RankNum", "title": "Rank"},
+      {"field": "end_date_of_week", "title": "End Date of Week"}
+    ]
+  },
+  "config": {}
+}
