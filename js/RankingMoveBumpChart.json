@@ -1,7 +1,6 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "width": 900,
-  "height": 500,
+  "width": "container",
   "title": "AU Top-10 Songs — Weekly Ranking Movements",
   "data": {
     "url": "https://raw.githubusercontent.com/yfengoo/3179W10/refs/heads/main/data/youtube_spotify.csv"
