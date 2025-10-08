@@ -1,7 +1,9 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "width": "container",
-  "title": "AU Top-10 — Release vs Max Weeks on Chart (Bubble = streams_views)",
+  "height": 400,
+  "title": "AU Top-10 Max Weeks on Chart & Streams/Views",
+
   "data": {
     "url": "https://raw.githubusercontent.com/yfengoo/3179W10/refs/heads/main/data/youtube_spotify.csv"
   },
@@ -26,75 +28,100 @@
         "step": 50000,
         "name": "Min Streams/Views: "
       }
-    },
-    {
-      "name": "SongSel",
-      "select": {"type": "point", "fields": ["Song"]},
-      "bind": "legend"
     }
   ],
 
   "transform": [
-    {"calculate": "toNumber(datum.weeks_on_chart)", "as": "WeeksNum"},
-    {"calculate": "toNumber(datum.streams_views)", "as": "SV"},
-    {"filter": "isFinite(datum.WeeksNum) && isFinite(datum.SV)"},
+    { "calculate": "toNumber(datum.weeks_on_chart)", "as": "WeeksNum" },
+    { "calculate": "toNumber(datum.streams_views)", "as": "SV" },
+    { "filter": "isFinite(datum.WeeksNum) && isFinite(datum.SV)" },
     {
-      "window": [{"op": "row_number", "as": "rownum"}],
+      "window": [{ "op": "row_number", "as": "rownum" }],
       "sort": [
-        {"field": "WeeksNum", "order": "descending"},
-        {"field": "end_date_of_week", "order": "descending"}
+        { "field": "WeeksNum", "order": "descending" },
+        { "field": "end_date_of_week", "order": "descending" }
       ],
       "groupby": ["Song", "Platform"]
     },
-    {"filter": "datum.rownum == 1"},
-    {"filter": "datum.Platform == Platform_selection"},
-    {"filter": "datum.SV >= StreamsFilter"}
+    { "filter": "datum.rownum == 1" },
+    { "filter": "datum.Platform == Platform_selection" },
+    { "filter": "datum.SV >= StreamsFilter" }
   ],
-"layer":[{
-  "mark": {"type": "circle"},
+
   "encoding": {
     "x": {
       "field": "release_date",
       "type": "temporal",
       "title": "Release Date",
-      "scale": {
-        "domain": ["2024-01-01", "2025-10-01"],
-        "nice": false
-      },
-      "axis": {"format": "%b %Y"}
+      "scale": { "domain": ["2024-01-01", "2025-10-01"], "nice": false },
+      "axis": { "format": "%b %Y" }
     },
     "y": {
       "field": "WeeksNum",
       "type": "quantitative",
       "title": "Max Weeks in Top 10",
-      "scale": {"domain": [0, 100]},
-      "axis": {
-        "values": [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-        "grid": true
+      "scale": { "domain": [0, 100] },
+      "axis": { "values": [0,10,20,30,40,50,60,70,80,90,100], "grid": true }
+    }
+  },
+
+  "layer": [
+    {
+      "selection": {
+        "SongSel": {
+          "type": "multi",
+          "fields": ["Song"],
+          "bind": "legend"
+        }
+      },
+      "mark": "circle",
+      "encoding": {
+        "size": {
+          "field": "SV",
+          "type": "quantitative",
+          "scale": {
+            "type": "threshold",
+            "domain": [300000,600000,900000,1200000,1500000,1800000,2100000,2400000],
+            "range": [10,30,60,100,200,300,400,600]
+          },
+          "legend": { "title": "Streams/Views", "format": ".1s" }
+        },
+        "color": { "field": "Song", "type": "nominal", "title": "Song" },
+        "opacity": { "condition": { "selection": "SongSel", "value": 1 }, "value": 0.2 },
+        "tooltip": [
+          { "field": "Song" },
+          { "field": "Artists" },
+          { "field": "Platform" },
+          { "field": "WeeksNum", "title": "Max Weeks" },
+          { "field": "SV", "title": "Streams/Views at Max", "format": ",.0f" },
+          { "field": "release_date", "type": "temporal", "title": "Release Date" },
+          { "field": "end_date_of_week", "type": "temporal", "title": "Week of Max" }
+        ]
       }
     },
-    "size": {
-      "field": "SV",
-      "type": "quantitative",
-      "scale": {
-        "type": "threshold",
-        "domain": [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000],
-        "range": [10, 30, 60, 100, 200, 300, 400, 500, 600]
+
+    {
+      "mark": {
+        "type": "text",
+        "align": "right",
+        "baseline": "middle",
+        "dx": -12,
+        "fontSize": 11.5,
+        "fontStyle": "italic"
       },
-      "legend": {"title": "Streams/Views", "format": ".1s"}
-    },
-    "color": {"field": "Song", "type": "nominal", "title": "Song"},
-    "opacity": {"condition": {"param": "SongSel", "value": 1}, "value": 0.2},
-    "tooltip": [
-      {"field": "Song"},
-      {"field": "Artists"},
-      {"field": "Platform"},
-      {"field": "WeeksNum", "title": "Max Weeks"},
-      {"field": "SV", "title": "Streams/Views at Max", "format": ",.0f"},
-      {"field": "release_date", "type": "temporal", "title": "Release Date"},
-      {"field": "end_date_of_week", "type": "temporal", "title": "Week of Max"}
-    ]
-}
-}
-]
+      "encoding": {
+        "text": { "field": "Song" },
+        "color": { "value": "black" },
+        "opacity": {
+          "condition": {
+            "test": "datum['Song']=='Golden' || datum['Song']=='Ordinary' || datum['Song']=='Man I Need' ||datum['Song']=='back to friends' ||datum['Song']=='undressed' ||datum['Song']=='No Broke Boys' ||datum['Song']=='Beautiful Things' || datum['Song']=='APT.'",
+            "value": 1
+          },
+          "value": 0
+        }
+      }
+    }
+  ],
+
+  "config": {}
 }
