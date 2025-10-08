@@ -1,10 +1,11 @@
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "width": "container", 
+  "width": "container",
   "title": "AU Top-10 — Release vs Max Weeks on Chart (Bubble = streams_views)",
   "data": {
     "url": "https://raw.githubusercontent.com/yfengoo/3179W10/refs/heads/main/data/youtube_spotify.csv"
   },
+
   "params": [
     {
       "name": "Platform_selection",
@@ -16,11 +17,23 @@
       "value": "Spotify"
     },
     {
+      "name": "StreamsFilter",
+      "value": 300000,
+      "bind": {
+        "input": "range",
+        "min": 0,
+        "max": 2500000,
+        "step": 50000,
+        "name": "Min Streams/Views: "
+      }
+    },
+    {
       "name": "SongSel",
       "select": {"type": "point", "fields": ["Song"]},
       "bind": "legend"
     }
   ],
+
   "transform": [
     {"calculate": "toNumber(datum.weeks_on_chart)", "as": "WeeksNum"},
     {"calculate": "toNumber(datum.streams_views)", "as": "SV"},
@@ -34,14 +47,20 @@
       "groupby": ["Song", "Platform"]
     },
     {"filter": "datum.rownum == 1"},
-    {"filter": "datum.Platform == Platform_selection"}
+    {"filter": "datum.Platform == Platform_selection"},
+    {"filter": "datum.SV >= StreamsFilter"}
   ],
+"layer":[{
   "mark": {"type": "circle"},
   "encoding": {
     "x": {
       "field": "release_date",
       "type": "temporal",
       "title": "Release Date",
+      "scale": {
+        "domain": ["2024-01-01", "2025-10-01"],
+        "nice": false
+      },
       "axis": {"format": "%b %Y"}
     },
     "y": {
@@ -59,8 +78,8 @@
       "type": "quantitative",
       "scale": {
         "type": "threshold",
-        "domain": [300000, 600000, 1000000, 1500000, 2000000, 3000000],
-        "range": [20, 60, 120, 200, 300, 400, 500]
+        "domain": [300000, 600000, 900000, 1200000, 1500000, 1800000, 2100000, 2400000],
+        "range": [10, 30, 60, 100, 200, 300, 400, 500, 600]
       },
       "legend": {"title": "Streams/Views", "format": ".1s"}
     },
@@ -75,6 +94,7 @@
       {"field": "release_date", "type": "temporal", "title": "Release Date"},
       {"field": "end_date_of_week", "type": "temporal", "title": "Week of Max"}
     ]
-  },
-  "config": {}
+}
+}
+]
 }
