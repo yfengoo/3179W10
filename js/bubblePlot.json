@@ -2,7 +2,7 @@
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "width": "container",
   "height": 400,
-  "title": "AU Top-10 Max Weeks on Chart & Streams/Views",
+  "title": "AU Top-10 Songs' Max Weeks on Chart & Streams/Views",
 
   "data": {
     "url": "https://raw.githubusercontent.com/yfengoo/3179W10/refs/heads/main/data/youtube_spotify.csv"
